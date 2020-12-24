@@ -1,0 +1,25 @@
+Lmod has detected the following error: The following module(s) are unknown:
+"MATLAB/R2017b"
+
+Please check the spelling or version number. Also try "module spider ..."
+It is also possible your cache file is out-of-date; it may help to try:
+  $ module --ignore-cache load "MATLAB/R2017b"
+
+Also make sure that all modulefiles written in TCL start with the string
+#%Module
+
+
+
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2018 The MathWorks, Inc.
+                   R2018a (9.4.0.813654) 64-bit (glnxa64)
+                             February 23, 2018
+
+ 
+To get started, type one of these: helpwin, helpdesk, or demo.
+For product information, visit www.mathworks.com.
+ 
+{Undefined variable "SuccessGrid_k3_n20_rhoLarge_DenoiseEigs" or class
+"SuccessGrid_k3_n20_rhoLarge_DenoiseEigs.m".
+} 
