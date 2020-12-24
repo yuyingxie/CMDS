@@ -1,0 +1,70 @@
+% Set parameters (n and d, Covariance)
+n=floor(exp(exp(linspace(1.9,log(log(35000)),20))));
+%n=floor(exp(exp(2.2155)));
+p=size(n,2);
+d = 10;  %Regime 1: fixed d
+Cov = toeplitz(.7.^((1:d)-1));
+SqrtCov = Cov^(1/2);
+sigmasq = exp(linspace(-150/norm(Cov),-152/norm(Cov),20));
+%sigmasq = exp(-151/norm(Cov));
+sigma = sqrt(sigmasq);
+m=size(sigma,2);
+J = 50; %Number of simulations
+SuccessGrid = zeros(p,m);
+LogSigmaSqGrid = zeros(p,m);
+LogLogNGrid = zeros(p,m);
+
+
+% Select Means:
+M = [.0000001*eye(4) zeros(4,6)];
+k = size(M,1);
+r=k-1;
+
+
+for s=1:p
+    for q = 1:m
+        N = k*n(s);
+        gamma = d/N;
+        Failure = ones(1,J); %AVL: Failure = zeros(1,J);
+        for i=1:J
+            X = zeros(N,d);
+            for j=1:k
+                X((j-1)*n(s)+1:j*n(s),:) = ones(n(s),1)*M(j,:)+sigma(q)*randn(n(s),d)*SqrtCov;
+            end
+            centeredX = X - ones(N,1)*mean(X);
+            [V,S,R] = svd(centeredX);
+            D = S.^2;
+            %[V, D] = eig(centeredX*centeredX');
+            [D, I] = sort(diag(D), 'descend');
+             V = V(:,I);
+             Z = linkage(V(:,1:r)*sqrt(diag(D(1:r))),'single');
+             SL_clustering = cluster(Z,'Maxclust',k);
+             Failure(i) = 0;
+             for j=1:k
+                 if length(unique(SL_clustering((j-1)*n(s)+1:j*n(s))))>1
+                     Failure(i)=1;
+                 end
+             end
+% % AVL: when r=1, just use sign of top eigenvector for now as SL becomes comp bottleneck
+%              posidx = find(V(:,1)>0);
+%              negidx = find(V(:,1)<0);
+%              if (isequal(negidx,(1:n(s))')||isequal(posidx,(1:n(s))'))==1
+%                  Failure(i)=0;
+%              end 
+        end
+        SuccessGrid(s,q) = 1-length(find(Failure==1))/J; %prob of exact recovery
+        LogSigmaSqGrid(s,q) = log(norm(Cov)*sigmasq(q)); %Recods largest eigenvalue of the cov matrix
+        LogLogNGrid(s,q) = log(log(n(s)));
+        save('SuccessGrid_k4_d10_GenCovHighRes.mat')
+    end
+end
+% %% save emp_fail_prob_k2_dfixed_nscale.mat emp_fail_prob
+% figure
+% surf(LogLogNGrid,LogSigmaSqGrid,SuccessGrid)
+% view(2)
+% colorbar
+% xlabel('log(log(n))')
+% ylabel('log(sigma^2)')
+% title('Probability of Exact Recovery')
+% 
+% save('SuccessGrid_k4_d10_GenCovHighRes.mat')
